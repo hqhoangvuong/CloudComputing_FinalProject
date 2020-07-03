@@ -18,6 +18,7 @@ import {
   Text,
   ActivityIndicator,
   StatusBar,
+  Button,
 } from 'react-native';
 
 import { getWeather, predict } from './utils/api';
@@ -78,12 +79,12 @@ export default class App extends React.Component {
 
     // Activity
     return (
-      <KeyboardAvoidingView style={styles.container} behavior="padding">
+      <KeyboardAvoidingView style={styles.container} >
 
         <StatusBar barStyle="light-content" />
 
         <ImageBackground
-          source={getImageForWeather(humidity)}
+          source={getImageForWeather(formatAMPM())}
           style={styles.imageContainer}
           imageStyle={styles.image}
         >
@@ -97,23 +98,25 @@ export default class App extends React.Component {
                 {!error && (
                   <View>
                     <Text h1 style={[styles.largeText, styles.textStyle]}>
-                      Tp. Hồ Chí Minh
+                      Tp. Hồ Chí Minh <Text style={[styles.largeText, styles.textStyle]}>
+                                      {getIconForWeather(setIconHumid(humidity))}
+                                       </Text>
                     </Text>
-                    <Text style={[styles.largeText, styles.textStyle]}>
-                      {getIconForWeather(humidity)}
-                    </Text>
+                    
                     <Text style={[styles.normalText, styles.textStyle]}>
-                      Độ ẩm: {parseInt(humidity) + '%'}
+                      Độ ẩm: {parseInt(humidity) + '%'}  
                     </Text>
                     <Text style={[styles.normalText, styles.textStyle]}>
                       Nhiệt độ: {`${Math.round(parseFloat(temperature) * 10) / 10}°`}
                     </Text>
-                    <Text style={[styles.smallText, styles.textStyle]}>
-                      Cập nhật lần cuối: {timeConverter(created)}
+                    <Text style={[styles.normalText, styles.textStyle]}>
+                      Cập nhật lần cuối: {timeConverter(created)}{"\n\n\n"}
                     </Text>
-
+                  
                     <Text h1 style={[styles.largeText, styles.textStyle]}>
-                      Dự báo một giờ tới
+                      Dự báo một giờ tới <Text style={[styles.largeText, styles.textStyle]}>
+                                      {getIconForWeather(setIconHumid(predictedHum))}
+                                       </Text>
                     </Text>
                     <Text style={[styles.normalText, styles.textStyle]}>
                       Độ ẩm: {parseInt(predictedHum) + '%'}
@@ -134,9 +137,6 @@ export default class App extends React.Component {
 function timeConverter(UNIX_timestamp) {
   var a = new Date(UNIX_timestamp * 1000);
   var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  var year = a.getFullYear();
-  var month = months[a.getMonth()];
-  var date = a.getDate();
   var hour = a.getHours();
   var min = a.getMinutes();
   var sec = a.getSeconds();
@@ -145,11 +145,44 @@ function timeConverter(UNIX_timestamp) {
 
   return time;
 }
+
+// Xu ly background theo gio he thong.
+function formatAMPM() {
+  var a = new Date();
+  var hours = a.getHours();
+  var minutes = a.getMinutes();
+  var ampm = hours >= 12 ? 'pm' : 'am';
+  hours = hours % 12;
+  hours = hours ? hours : 12; // the hour '0' should be '12'
+  minutes = minutes < 10 ? '0'+minutes : minutes;
+  var strTime = hours + ':' + minutes + ' ' + ampm;
+  if(strTime.includes("am")) {
+    return 'Morning';
+  }else{
+    return 'Night';
+  }
+}
+
+
+function setIconHumid(humidity){
+  var a=parseFloat(humidity);
+  //duoi 30 thi nang
+  if(a<=30){
+    return 'Clear';
+  }
+  //tren 30 thi am uot
+  else if(a<90){
+    return 'Light Rain';
+  }
+  // tren 90 thi mua
+  else{
+    return 'Heavy Rain';
+  }
+}
 /* StyleSheet */
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#34495E',
   },
   imageContainer: {
     flex: 1,
@@ -162,22 +195,24 @@ const styles = StyleSheet.create({
   },
   detailsContainer: {
     flex: 1,
-    justifyContent: 'center',
-    backgroundColor: 'rgba(0,0,0,0.2)',
-    paddingHorizontal: 20,
+    // justifyContent: 'center',
+    // backgroundColor: 'rgba(0,0,0,0.2)',
+    // paddingHorizontal: 5,
   },
   textStyle: {
-    textAlign: 'center',
+    textAlign: 'left',
     fontFamily: Platform.OS === 'ios' ? 'AvenirNext-Regular' : 'Roboto',
     color: 'white',
   },
   largeText: {
-    fontSize: 43,
+    fontSize: 40,
+    fontWeight:"bold"
   },
   smallText: {
     fontSize: 18,
   },
   normalText: {
     fontSize: 26,
+    padding:15
   },
 });
