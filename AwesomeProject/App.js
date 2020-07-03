@@ -11,74 +11,57 @@ import {
   SafeAreaView,
   StyleSheet,
   ScrollView,
-  ImageBackground, 
+  ImageBackground,
   KeyboardAvoidingView,
-  Platform, 
+  Platform,
   View,
   Text,
   ActivityIndicator,
   StatusBar,
 } from 'react-native';
 
-import { getLocationId, getWeather } from './utils/api';
+import { getWeather, predict } from './utils/api';
 import getImageForWeather from './utils/getImageForWeather';
 import getIconForWeather from './utils/getIconForWeather';
 
-// Search component
-import SearchInput from './SearchInput';
 
-// MomentJS
-import moment from 'moment';
 
 export default class App extends React.Component {
   constructor(props) {
     super(props);
 
-    // bind SCOPE
-    this.handleDate = this.handleDate.bind(this);
-
     // STATE
     this.state = {
       loading: false,
       error: false,
-
-      location: '',
-      temperature: 0,
-      weather: '',
-      created: '2000-01-01T00:00:00.000000Z'
+      temperature: '',
+      humidity: '',
+      created: '',
+      predictedTemp: '',
+      predictedHum: '',
     };
 
   }
-  // Life cycle
-  componentDidMount() {
-    this.handleUpdateLocation('Kiev');
-  }
 
-  // Parse of date
-  handleDate = date => moment(date).format("hh:mm:ss");
 
-  // Update current location
-  handleUpdateLocation = async city => {
-    if (!city) return;
+  // Ham load trong react
+  componentDidMount = () => {
 
     this.setState({ loading: true }, async () => {
       try {
-
-        const ID = await getLocationId(city);
-        const { location, weather, temperature, created } = await getWeather(ID);
-
+        const resp = await getWeather();
+        const pre = await predict(parseFloat(resp.temperature), parseFloat(resp.humidity));
         this.setState({
           loading: false,
           error: false,
-          location,
-          weather,
-          temperature,
-          created,
+          humidity: resp.humidity,
+          temperature: resp.temperature,
+          created: resp.time,
+          predictedTemp: pre.temperature,
+          predictedHum: pre.humidity
         });
 
-
       } catch (e) {
-
         this.setState({
           loading: false,
           error: true,
@@ -90,9 +73,8 @@ export default class App extends React.Component {
 
   // RENDERING
   render() {
-
     // GET values of state
-    const { loading, error, location, weather, temperature, created } = this.state;
+    const { loading, error, humidity, temperature, created, predictedTemp, predictedHum } = this.state;
 
     // Activity
     return (
@@ -101,47 +83,46 @@ export default class App extends React.Component {
         <StatusBar barStyle="light-content" />
 
         <ImageBackground
-          source={getImageForWeather(weather)}
+          source={getImageForWeather(humidity)}
           style={styles.imageContainer}
           imageStyle={styles.image}
         >
 
-          <View style={styles.detailsContainer}>
+          <View style={styles.detailsContainer} >
 
             <ActivityIndicator animating={loading} color="white" size="large" />
 
             {!loading && (
               <View>
-                {error && (
-                  <Text style={[styles.smallText, styles.textStyle]}>
-                    😞 Could not load your city or weather. Please try again later...
-                  </Text>
-                )}
                 {!error && (
                   <View>
+                    <Text h1 style={[styles.largeText, styles.textStyle]}>
+                      Tp. Hồ Chí Minh
+                    </Text>
                     <Text style={[styles.largeText, styles.textStyle]}>
-                      {getIconForWeather(weather)} {location}
+                      {getIconForWeather(humidity)}
+                    </Text>
+                    <Text style={[styles.normalText, styles.textStyle]}>
+                      Độ ẩm: {parseInt(humidity) + '%'}
+                    </Text>
+                    <Text style={[styles.normalText, styles.textStyle]}>
+                      Nhiệt độ: {`${Math.round(parseFloat(temperature) * 10) / 10}°`}
                     </Text>
                     <Text style={[styles.smallText, styles.textStyle]}>
-                       {weather}
+                      Cập nhật lần cuối: {timeConverter(created)}
                     </Text>
-                    <Text style={[styles.largeText, styles.textStyle]}>
-                      {`${Math.round(temperature)}°`}
+
+                    <Text h1 style={[styles.largeText, styles.textStyle]}>
+                      Dự báo một giờ tới
+                    </Text>
+                    <Text style={[styles.normalText, styles.textStyle]}>
+                      Độ ẩm: {parseInt(predictedHum) + '%'}
+                    </Text>
+                    <Text style={[styles.normalText, styles.textStyle]}>
+                      Nhiệt độ: {`${Math.round(parseFloat(predictedTemp) * 10) / 10}°`}
                     </Text>
                   </View>
                 )}
-
-                <SearchInput
-                  placeholder="Search any city"
-                  onSubmit={this.handleUpdateLocation}
-                />
-
-                {!error && (
-                  <Text style={[styles.smallText, styles.textStyle]}>
-                    Last update: {this.handleDate(created)}
-                  </Text>
-                )}
-
               </View>
             )}
           </View>
@@ -150,7 +131,20 @@ export default class App extends React.Component {
     );
   }
 }
+function timeConverter(UNIX_timestamp) {
+  var a = new Date(UNIX_timestamp * 1000);
+  var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  var year = a.getFullYear();
+  var month = months[a.getMonth()];
+  var date = a.getDate();
+  var hour = a.getHours();
+  var min = a.getMinutes();
+  var sec = a.getSeconds();
+  // var time = date + ' ' + month + ' ' + year + ' ' + hour + ':' + min + ':' + sec ;
+  var time = hour + ':' + min + ':' + sec;
 
+  return time;
+}
 /* StyleSheet */
 const styles = StyleSheet.create({
   container: {
@@ -178,9 +172,12 @@ const styles = StyleSheet.create({
     color: 'white',
   },
   largeText: {
-    fontSize: 44,
+    fontSize: 43,
   },
   smallText: {
     fontSize: 18,
+  },
+  normalText: {
+    fontSize: 26,
   },
 });

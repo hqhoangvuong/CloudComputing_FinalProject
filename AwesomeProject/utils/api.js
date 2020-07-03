@@ -15,16 +15,16 @@
   ]
  *
  */
-export const getLocationId = async city => {
+// export const getLocationId = async city => {
 
-  const response = await fetch(
-    `https://www.metaweather.com/api/location/search/?query=${city}`,
-  );
+//   const response = await fetch(
+//     `https://www.metaweather.com/api/location/search/?query=${city}`,
+//   );
 
-  const r = await response.json();
+//   const r = await response.json();
 
-  return r[0].woeid;
-};
+//   return r[0].woeid;
+// };
 
 /*
  * GEt WEATHER by current Location <<< iD  >>>
@@ -62,18 +62,13 @@ export const getLocationId = async city => {
  *
  */
 export const getWeather = async woeid => {
-
-  const response = await fetch(
-    `https://www.metaweather.com/api/location/${woeid}/`
-  );
-
-  let { title, consolidated_weather } = await response.json();
-  let { weather_state_name, the_temp, created } = consolidated_weather[0];
-
-  return {
-    location: title,
-    weather: weather_state_name,
-    temperature: the_temp,
-    created: created
-  };
+  const response = await fetch(`https://hkr-weather-api.herokuapp.com/iot`);
+  let r = await response.json();
+  return r;
 };
+
+export const predict = async (currentTemp, currentHum) => {
+  const response = await fetch(`https://hkr-weather-api.herokuapp.com/iot/predict/?temp=` + currentTemp + '&hum=' + currentHum);
+  let r = await response.json();
+  return r;
+}
