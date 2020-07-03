@@ -66,3 +66,9 @@ export const getWeather = async woeid => {
   let r = await response.json();
   return r;
 };
+
+export const predict = async (currentTemp, currentHum) => {
+  const response = await fetch(`https://hkr-weather-api.herokuapp.com/iot/predict/?temp=` + currentTemp + '&hum=' + currentHum);
+  let r = await response.json();
+  return r;
+}

@@ -11,16 +11,16 @@ import {
   SafeAreaView,
   StyleSheet,
   ScrollView,
-  ImageBackground, 
+  ImageBackground,
   KeyboardAvoidingView,
-  Platform, 
+  Platform,
   View,
   Text,
   ActivityIndicator,
   StatusBar,
 } from 'react-native';
 
-import {  getWeather } from './utils/api';
+import { getWeather, predict } from './utils/api';
 import getImageForWeather from './utils/getImageForWeather';
 import getIconForWeather from './utils/getIconForWeather';
 
@@ -29,7 +29,7 @@ import getIconForWeather from './utils/getIconForWeather';
 export default class App extends React.Component {
   constructor(props) {
     super(props);
-   
+
     // STATE
     this.state = {
       loading: false,
@@ -37,6 +37,8 @@ export default class App extends React.Component {
       temperature: '',
       humidity: '',
       created: '',
+      predictedTemp: '',
+      predictedHum: '',
     };
 
   }
@@ -48,12 +50,15 @@ export default class App extends React.Component {
     this.setState({ loading: true }, async () => {
       try {
         const resp = await getWeather();
+        const pre = await predict(parseFloat(resp.temperature), parseFloat(resp.humidity));
         this.setState({
           loading: false,
           error: false,
-          humidity:resp.humidity,
-          temperature:resp.temperature,
-          created:resp.time,
+          humidity: resp.humidity,
+          temperature: resp.temperature,
+          created: resp.time,
+          predictedTemp: pre.temperature,
+          predictedHum: pre.humidity
         });
 
       } catch (e) {
@@ -69,7 +74,7 @@ export default class App extends React.Component {
   // RENDERING
   render() {
     // GET values of state
-    const { loading, error, humidity, temperature, created } = this.state;
+    const { loading, error, humidity, temperature, created, predictedTemp, predictedHum } = this.state;
 
     // Activity
     return (
@@ -92,24 +97,31 @@ export default class App extends React.Component {
                 {!error && (
                   <View>
                     <Text h1 style={[styles.largeText, styles.textStyle]}>
-                    Dự báo nhiệt độ, độ ẩm 
-                    Hồ Chí Minh
+                      Tp. Hồ Chí Minh
                     </Text>
                     <Text style={[styles.largeText, styles.textStyle]}>
-                      {getIconForWeather(humidity)} 
+                      {getIconForWeather(humidity)}
                     </Text>
                     <Text style={[styles.normalText, styles.textStyle]}>
-                     Độ ẩm: {humidity}
+                      Độ ẩm: {parseInt(humidity) + '%'}
                     </Text>
                     <Text style={[styles.normalText, styles.textStyle]}>
-                    Nhiệt độ: {`${Math.round(parseFloat(temperature) * 10) / 10}°`}
+                      Nhiệt độ: {`${Math.round(parseFloat(temperature) * 10) / 10}°`}
+                    </Text>
+                    <Text style={[styles.smallText, styles.textStyle]}>
+                      Cập nhật lần cuối: {timeConverter(created)}
+                    </Text>
+
+                    <Text h1 style={[styles.largeText, styles.textStyle]}>
+                      Dự báo một giờ tới
+                    </Text>
+                    <Text style={[styles.normalText, styles.textStyle]}>
+                      Độ ẩm: {parseInt(predictedHum) + '%'}
+                    </Text>
+                    <Text style={[styles.normalText, styles.textStyle]}>
+                      Nhiệt độ: {`${Math.round(parseFloat(predictedTemp) * 10) / 10}°`}
                     </Text>
                   </View>
-                )}
-                {!error && (
-                  <Text style={[styles.smallText, styles.textStyle]}>
-                   Cập nhật lần cuối: {timeConverter(created)}
-                  </Text>
                 )}
               </View>
             )}
@@ -119,22 +131,20 @@ export default class App extends React.Component {
     );
   }
 }
-function timeConverter(UNIX_timestamp){
-  var a = new Date((parseFloat(UNIX_timestamp) - 5*60)*1000);
-  var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  var date=a.getDate();
-  var month=a.getMonth();
-  var year=a.getFullYear();
+function timeConverter(UNIX_timestamp) {
+  var a = new Date(UNIX_timestamp * 1000);
+  var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  var year = a.getFullYear();
+  var month = months[a.getMonth()];
+  var date = a.getDate();
   var hour = a.getHours();
   var min = a.getMinutes();
   var sec = a.getSeconds();
   // var time = date + ' ' + month + ' ' + year + ' ' + hour + ':' + min + ':' + sec ;
-  var time =    date + ' ' + month + ' ' + year+' ' + hour + ':' + min + ':' + sec ;
-  // var aestTime = new Date().toLocaleString("en-US", {timeZone: "Etc/GMT-7"});
-  // time = new Date(aestTime).toISOString()
+  var time = hour + ':' + min + ':' + sec;
+
   return time;
 }
-
 /* StyleSheet */
 const styles = StyleSheet.create({
   container: {
