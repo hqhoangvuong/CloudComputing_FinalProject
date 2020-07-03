@@ -11,4 +11,4 @@ const icons = {
   Thunder: '⛈️'
 };
 
-export default weather => icons[weather];
+export default humidity => icons[humidity];
