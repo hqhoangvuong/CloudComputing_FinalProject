@@ -107,7 +107,7 @@ export default class App extends React.Component {
                       Độ ẩm: {parseInt(humidity) + '%'}  
                     </Text>
                     <Text style={[styles.normalText, styles.textStyle]}>
-                      Nhiệt độ: {`${Math.round(parseFloat(temperature) * 10) / 10}°`}
+                      Nhiệt độ: {`${Math.round(parseFloat(temperature) * 10) / 10}°`} - {`${Math.round(parseFloat(temperature) *33.8* 10) / 10}°F`}
                     </Text>
                     <Text style={[styles.normalText, styles.textStyle]}>
                       Cập nhật lần cuối: {timeConverter(created)}{"\n\n\n"}
