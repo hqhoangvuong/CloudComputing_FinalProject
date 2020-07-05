@@ -61,6 +61,7 @@
   ]
  *
  */
+
 export const getWeather = async woeid => {
   const response = await fetch(`https://hkr-weather-api.herokuapp.com/iot`);
   let r = await response.json();

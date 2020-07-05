@@ -113,7 +113,6 @@ export default class App extends React.Component {
           
             
             <ActivityIndicator animating={loading} color="white" size="large" />
-
             {!loading && (
               <View>
                 {!error && (
@@ -156,15 +155,13 @@ export default class App extends React.Component {
 }
 function timeConverter(UNIX_timestamp) {
   var a = new Date(UNIX_timestamp * 1000);
-  var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  // var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   var hour = a.getHours();
   var min = a.getMinutes();
   var sec = a.getSeconds();
   sec = sec < 10 ? '0'+sec : sec;
-
   // var time = date + ' ' + month + ' ' + year + ' ' + hour + ':' + min + ':' + sec ;
   var time = hour + ':' + min + ':' + sec;
-
   return time;
 }
 
@@ -178,9 +175,7 @@ function formatAMPM() {
   // hours = hours ? hours : 12; // the hour '0' should be '12'
   minutes = minutes < 10 ? '0'+minutes : minutes;
   // var strTime = hours + ':' + minutes + ' ' + ampm;
-  if(ampm.includes('am') && hours>6) {
-    return 'Morning';
-  }else if(ampm.includes('pm') && hours<=18){
+  if(hours>6 && hours<=18) {
     return 'Morning';
   }
   else{
@@ -197,7 +192,7 @@ function setIconHumid(humidity){
   }
   //tren 30 thi am uot
   else if(a<90){
-    return 'Light Rain';
+    return 'Heavy Cloud';
   }
   // tren 90 thi mua
   else{
