@@ -10,7 +10,7 @@ const images = {
   Snow: require('../assets/snow.png'),
   Thunder: require('../assets/thunder.png'),
   Morning: require('../assets/morning.png'),
-  Night:require('../assets/night.png')
+  Night:require('../assets/night.gif')
 };
 
 export default weather => images[weather];
